@@ -7,7 +7,9 @@ app = Flask(__name__)
 
 # -------------------- Config --------------------
 app.config['SECRET_KEY'] = 'deepfake-secret-key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://deepfake_demo:12345@localhost:5432/deepfake_demo'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
+
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 

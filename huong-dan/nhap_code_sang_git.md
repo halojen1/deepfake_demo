@@ -32,7 +32,7 @@ Sao chép URL HTTPS của repo mới (ví dụ: https://github.com/khach/deepfak
 
 4. Kết nối repo local với GitHub và push code
 
-git remote add origin https://github.com/khach/deepfake_demo.git
+git remote add origin https://github.com/halojen1/deepfake_demo.git
 git branch -M main
 git push -u origin main
 
