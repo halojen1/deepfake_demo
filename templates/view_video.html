@@ -1,0 +1,390 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xem video - Deepfake Demo</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #202020, #181818);
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 30px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: #242424;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    }
+    video {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+    select, button {
+      background: #333;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover, select:hover {
+      background: #555;
+    }
+    a {
+      color: #00b3ff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>{{ video.filename }}</h2>
+    <video id="player" controls>
+      <source src="{{ url_for('static', filename='uploads/' + video.filename) }}" type="video/mp4">
+      Trình duyệt của bạn không hỗ trợ phát video.
+    </video>
+
+    <div class="controls">
+      <form method="post" action="{{ url_for('delete_video', video_id=video.id) }}">
+        <button type="submit" style="background:#c0392b;">🗑 Xóa video</button>
+      </form>
+
+      <div>
+        <label for="quality">Chất lượng:</label>
+        <select id="quality" onchange="changeQuality()">
+          <option value="480p">480p</option>
+          <option value="720p" selected>720p</option>
+          <option value="1080p">1080p</option>
+          <option value="2k">2K</option>
+        </select>
+      </div>
+
+      <a href="/dashboard"><button type="button">⬅️ Quay lại</button></a>
+    </div>
+  </div>
+
+  <script>
+    function changeQuality() {
+      const player = document.getElementById('player');
+      const quality = document.getElementById('quality').value;
+      alert("Chuyển chất lượng sang " + quality + " (mô phỏng)");
+      // Nếu có file thực, anh có thể load file tương ứng ở đây
+      // player.src = `/static/uploads/video_${quality}.mp4`;
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
