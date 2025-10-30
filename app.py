@@ -10,6 +10,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'yGvdZK7OLfdYmNZALYqYcvgb8EvG
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
 # -------------------- Cấu hình DATABASE --------------------
+# Lấy URL từ Render
 uri = os.getenv(
     "DATABASE_URL",
     "postgresql://deepfake_demo:yGvdZK7OLfdYmNZALYqYcvgb8EvGtKbY@dpg-d41benmr433s73drgvr0-a.oregon-postgres.render.com/deepfake_demo"
@@ -19,9 +20,9 @@ uri = os.getenv(
 if uri.startswith("postgres://"):
     uri = uri.replace("postgres://", "postgresql://", 1)
 
-# Luôn bật SSL trên Render
+# Bắt buộc dùng SSL trên Render
 app.config["SQLALCHEMY_DATABASE_URI"] = uri + "?sslmode=require"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 
 db = SQLAlchemy(app)
 
