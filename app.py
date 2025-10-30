@@ -3,36 +3,38 @@ import subprocess
 from flask import Flask, render_template, request, redirect, session, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 
+# -------------------- CẤU HÌNH ỨNG DỤNG --------------------
 app = Flask(__name__)
 
-# -------------------- Cấu hình bảo mật --------------------
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'yGvdZK7OLfdYmNZALYqYcvgb8EvGtKbY')
-app.config['UPLOAD_FOLDER'] = 'uploads'
+# SECRET_KEY cho session Flask
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'mysecretkey')
 
-# -------------------- Cấu hình DATABASE --------------------
-# Lấy URL từ Render
+# -------------------- CẤU HÌNH DATABASE --------------------
+# Lấy DATABASE_URL từ Render
 uri = os.getenv(
     "DATABASE_URL",
     "postgresql://deepfake_demo:yGvdZK7OLfdYmNZALYqYcvgb8EvGtKbY@dpg-d41benmr433s73drgvr0-a.oregon-postgres.render.com/deepfake_demo"
 )
 
-# Đảm bảo tương thích SQLAlchemy
+# Render thường trả về 'postgres://', cần sửa lại cho SQLAlchemy
 if uri.startswith("postgres://"):
     uri = uri.replace("postgres://", "postgresql://", 1)
 
-# Bắt buộc dùng SSL trên Render
-app.config["SQLALCHEMY_DATABASE_URI"] = uri + "?sslmode=require"
+# Thêm ?sslmode=require để kết nối an toàn
+if "?sslmode=" not in uri:
+    uri += "?sslmode=require"
 
+app.config["SQLALCHEMY_DATABASE_URI"] = uri
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-# -------------------- Models --------------------
+# -------------------- MODELS --------------------
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-
 
 class Video(db.Model):
     __tablename__ = 'videos'
@@ -41,16 +43,14 @@ class Video(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     result = db.Column(db.String(120))
 
-
-# -------------------- Helpers --------------------
+# -------------------- HÀM PHỤ TRỢ --------------------
 ALLOWED_EXTENSIONS = {'mp4', 'mov', 'avi', 'mkv'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
 def generate_resolutions(save_path):
-    """Tạo các phiên bản 480p, 720p, 1080p"""
+    """Tạo các phiên bản video 480p, 720p, 1080p"""
     base, ext = os.path.splitext(save_path)
     resolutions = {
         "480p": "854x480",
@@ -66,12 +66,10 @@ def generate_resolutions(save_path):
         except Exception as e:
             print(f"Lỗi khi tạo {label}: {e}")
 
-
-# -------------------- Routes --------------------
+# -------------------- ROUTES --------------------
 @app.route('/')
 def home():
     return redirect('/login')
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -96,16 +94,11 @@ def register():
 
     return render_template('register.html')
 
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username'].strip()
         password = request.form['password'].strip()
-
-        if not username or not password:
-            flash("Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!", "warning")
-            return redirect(url_for('login'))
 
         user = User.query.filter_by(username=username).first()
 
@@ -123,12 +116,11 @@ def login():
 
     return render_template('login.html')
 
-
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
+    flash("Đã đăng xuất.", "info")
     return redirect('/login')
-
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
@@ -156,7 +148,6 @@ def dashboard():
     videos = Video.query.filter_by(user_id=user.id).all()
     return render_template('dashboard.html', user=user, videos=videos)
 
-
 @app.route('/delete_video/<int:video_id>', methods=['POST'])
 def delete_video(video_id):
     video = Video.query.get(video_id)
@@ -171,10 +162,8 @@ def delete_video(video_id):
         flash("Không tìm thấy video!", "danger")
     return redirect(url_for('dashboard'))
 
-
-# -------------------- Run App --------------------
+# -------------------- KHỞI CHẠY ỨNG DỤNG --------------------
 if __name__ == '__main__':
-    # Tạo bảng nếu chưa có
     with app.app_context():
-        db.create_all()
-    app.run(host="0.0.0.0", port=5000, debug=True)
+        db.create_all()  # Tạo bảng nếu chưa có
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
