@@ -5,30 +5,25 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-# Lấy secret key từ biến môi trường
+# -------------------- Cấu hình bảo mật --------------------
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'yGvdZK7OLfdYmNZALYqYcvgb8EvGtKbY')
+app.config['UPLOAD_FOLDER'] = 'uploads'
 
-# Lấy DATABASE_URL từ Render
-import os
-
+# -------------------- Cấu hình DATABASE --------------------
 uri = os.getenv(
     "DATABASE_URL",
-    "postgresql://deepfake_demo:12345@localhost:5432/deepfake_demo"
+    "postgresql://deepfake_demo:yGvdZK7OLfdYmNZALYqYcvgb8EvGtKbY@dpg-d41benmr433s73drgvr0-a.oregon-postgres.render.com/deepfake_demo"
 )
 
+# Đảm bảo tương thích SQLAlchemy
 if uri.startswith("postgres://"):
     uri = uri.replace("postgres://", "postgresql://", 1)
 
-if "localhost" in uri or "127.0.0.1" in uri:
-    app.config["SQLALCHEMY_DATABASE_URI"] = uri + "?sslmode=disable"
-else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = uri + "?sslmode=require"
-
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'uploads'
+# Luôn bật SSL trên Render
+app.config["SQLALCHEMY_DATABASE_URI"] = uri + "?sslmode=require"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
-
 
 # -------------------- Models --------------------
 class User(db.Model):
@@ -87,7 +82,7 @@ def register():
             flash("Vui lòng nhập đầy đủ thông tin!", "warning")
             return redirect('/register')
 
-        existing_user = db.session.query(User).filter_by(username=username).first()
+        existing_user = User.query.filter_by(username=username).first()
         if existing_user:
             flash("Tên người dùng đã tồn tại!", "danger")
             return redirect('/register')
@@ -127,6 +122,7 @@ def login():
 
     return render_template('login.html')
 
+
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
@@ -138,7 +134,7 @@ def dashboard():
     if 'user_id' not in session:
         return redirect('/login')
 
-    user = db.session.query(User).get(session['user_id'])
+    user = db.session.get(User, session['user_id'])
 
     if request.method == 'POST':
         file = request.files['video']
@@ -156,7 +152,7 @@ def dashboard():
             new_video.result = "Hoàn tất xử lý"
             db.session.commit()
 
-    videos = db.session.query(Video).filter_by(user_id=user.id).all()
+    videos = Video.query.filter_by(user_id=user.id).all()
     return render_template('dashboard.html', user=user, videos=videos)
 
 
@@ -177,4 +173,7 @@ def delete_video(video_id):
 
 # -------------------- Run App --------------------
 if __name__ == '__main__':
+    # Tạo bảng nếu chưa có
+    with app.app_context():
+        db.create_all()
     app.run(host="0.0.0.0", port=5000, debug=True)
