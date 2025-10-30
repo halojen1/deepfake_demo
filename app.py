@@ -9,14 +9,20 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'deepfake-secret-key')
 
 # Lấy DATABASE_URL từ Render
-uri = os.getenv("DATABASE_URL", "postgresql://deepfake_demo:12345@localhost:5432/deepfake_demo")
+import os
+
+uri = os.getenv(
+    "DATABASE_URL",
+    "postgresql://deepfake_demo:12345@localhost:5432/deepfake_demo"
+)
+
 if uri.startswith("postgres://"):
     uri = uri.replace("postgres://", "postgresql://", 1)
-app.config['SQLALCHEMY_DATABASE_URI'] = uri + "?sslmode=require"
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
+if "localhost" in uri or "127.0.0.1" in uri:
+    app.config["SQLALCHEMY_DATABASE_URI"] = uri + "?sslmode=disable"
+else:
+    app.config["SQLALCHEMY_DATABASE_URI"] = uri + "?sslmode=require"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
