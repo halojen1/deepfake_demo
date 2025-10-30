@@ -5,9 +5,17 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-# -------------------- Config --------------------
-app.config['SECRET_KEY'] = 'deepfake-secret-key'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
+# Lấy secret key từ biến môi trường
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'deepfake-secret-key')
+
+# Lấy DATABASE_URL từ Render
+uri = os.getenv("DATABASE_URL", "postgresql://deepfake_demo:12345@localhost:5432/deepfake_demo")
+if uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = uri + "?sslmode=require"
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
