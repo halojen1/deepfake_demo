@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 
 # Lấy secret key từ biến môi trường
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'deepfake-secret-key')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'yGvdZK7OLfdYmNZALYqYcvgb8EvGtKbY')
 
 # Lấy DATABASE_URL từ Render
 import os
